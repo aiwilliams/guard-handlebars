@@ -1,0 +1,1 @@
+guard 'handlebars', :input => 'app/templates', :output => 'public/javascripts/templates.js'
