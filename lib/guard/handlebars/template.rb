@@ -23,11 +23,13 @@ module Guard
         function_path = "#{namespace.join('.')}.#{function}"
 
         # TODO Do not assume require.js, but make it possible
-        compiled = "define(['handlebars'], function() {"
+        compiled = "(function() {"
+        compiled <<   "define(['handlebars'], function() {"
         compiled <<   "\n#{namespace_constructor}"
         compiled <<   "\n#{function_path} = #{engine}.compile(\n'#{escape(source)}'\n);"
         compiled <<   "\n#{engine}.registerPartial('#{function}', #{function_path});" if partial?
-        compiled << "\n});"
+        compiled <<   "\n});"
+        compiled << "\n}).call(this);"
 
         compiled
       end
