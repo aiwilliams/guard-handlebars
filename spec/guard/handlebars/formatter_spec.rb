@@ -20,14 +20,14 @@ describe Guard::Handlebars::Formatter do
 
   describe '.error' do
     it 'colorize Guard::UI.error' do
-      ::Guard::UI.should_receive(:error).once.with("\e[31ma.handlebars\e[0m", {})
+      ::Guard::UI.should_receive(:error).once.with("\e[0\e[31mma.handlebars\e[0m", {})
       subject.error('a.handlebars')
     end
   end
 
   describe '.success' do
     it 'colorize Guard::UI.info' do
-      ::Guard::UI.should_receive(:info).once.with("\e[32ma.handlebars\e[0m", {})
+      ::Guard::UI.should_receive(:info).once.with("\e[0\e[32mma.handlebars\e[0m", {})
       subject.success('a.handlebars')
     end
   end
