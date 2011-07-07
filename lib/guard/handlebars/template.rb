@@ -9,41 +9,31 @@ module Guard
         '"'     => '\\"',
         "'"     => "\\'" }
 
-      attr_reader :engine, :exports, :source
+      attr_reader :source
 
       def initialize(path, source, options = {})
         @path, @source = path, source
-        # TODO Test this
-        @exports = options.has_key?(:exports) ? options[:exports] : 'window'
-        @root_namespace = options[:namespace] || 'Templates'
-        @engine = options[:engine] || 'Handlebars'
       end
 
       def compile
-        function_path = "#{namespace.join('.')}.#{function}"
-
         # TODO Do not assume require.js, but make it possible
         compiled = "(function() {"
-        compiled <<   "define(['handlebars'], function() {"
-        compiled <<   "\n#{namespace_constructor}"
-        compiled <<   "\n#{function_path} = #{engine}.compile(\n'#{escape(source)}'\n);"
-        compiled <<   "\n#{engine}.registerPartial('#{function}', #{function_path});" if partial?
-        compiled <<   "\n});"
+        compiled << "\n  define(['handlebars'], function() {"
+        compiled << "\n    var #{function} = Handlebars.compile('#{escape(source)}');"
+        compiled << "\n    Handlebars.registerPartial('#{function}', #{function});" if partial?
+        compiled << "\n    return #{function};"
+        compiled << "\n  });"
         compiled << "\n}).call(this);"
 
         compiled
       end
 
       def function
-        name.sub(/^_/, '')
+        name.sub(/^_/, '').split('.').first
       end
 
       def name
         @path.split('/').last
-      end
-
-      def namespace
-        [@root_namespace].concat(@path.split('/') - [name])
       end
 
       def partial?
@@ -54,15 +44,6 @@ module Guard
 
       def escape(string)
         string.strip.gsub(/(\r\n|[\n\r"'])/) { JS_ESCAPE_MAP[$1] }
-      end
-
-      def namespace_constructor
-        previous = exports
-        namespace.collect do |ns|
-          current = [previous, ns].compact.join('.')
-          previous = current
-          "#{current} || (#{current} = {});"
-        end.join
       end
 
     end
