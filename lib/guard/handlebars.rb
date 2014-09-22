@@ -23,21 +23,16 @@ module Guard
     end
 
     def run_all
-      run_on_change(Watcher.match_files(self, Dir.glob(File.join('**', '*.handlebars'))))
+      run_on_modifications(Watcher.match_files(self, Dir.glob(File.join('**', '*.handlebars'))))
     end
 
-    def run_on_change(paths)
-      changed_files = Runner.run(Inspector.clean(paths), watchers, options)
-      notify changed_files
+    def run_on_modifications(paths)
+      changed_files, success = Runner.run(Inspector.clean(paths), watchers, options)
+      throw :task_has_failed unless success
     end
-
-    private
-
-    def notify(changed_files)
-      ::Guard.guards.each do |guard|
-        paths = Watcher.match_files(guard, changed_files)
-        guard.run_on_change paths unless paths.empty?
-      end
+    
+    def run_on_removals(paths)
+      Runner.remove(Inspector.clean(paths, :missing_ok => true), watchers, options)
     end
 
   end
